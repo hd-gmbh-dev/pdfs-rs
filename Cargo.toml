@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/*"
+]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+rust-version = "1.88.0"
+authors = ["H & D GmbH Open Source <contact-oss@h-d-gmbh.de>"]
+license = "MIT"
+repository = "https://github.com/hd-gmbh-dev/pdfs-rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

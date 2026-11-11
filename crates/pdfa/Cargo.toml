@@ -1,0 +1,12 @@
+[package]
+name = "pdfa"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "PDF/A conformance checking for SHAPTH — façade over the page_validation engine"
+
+[dependencies]
+page_validation = "=0.13.0"
