@@ -128,8 +128,8 @@ fn harness_detects_a_wrong_expectation() {
 }
 
 #[test]
-fn cli_matches_the_facade() {
-    let facade_profile = pdfa::Profile::PdfA1b;
+fn cli_matches_the_library() {
+    let library_profile = pdfa::Profile::PdfA1b;
 
     for case in manifest().cases {
         if case.policy.is_some() {
@@ -137,7 +137,7 @@ fn cli_matches_the_facade() {
         }
         let path: PathBuf = Path::new(CORPUS).join(&case.file);
         let bytes = std::fs::read(&path).expect("fixture");
-        let facade = pdfa::validate_bytes(&bytes, facade_profile).expect("validate");
+        let library = pdfa::validate_bytes(&bytes, library_profile).expect("validate");
 
         let output = Command::new(env!("CARGO_BIN_EXE_pdfs"))
             .args([
@@ -152,7 +152,7 @@ fn cli_matches_the_facade() {
             .expect("run pdfs");
 
         let cli: CliReport = serde_json::from_slice(&output.stdout).expect("json report");
-        let facade_rules: Vec<&str> = facade
+        let library_rules: Vec<&str> = library
             .failures
             .iter()
             .map(|failure| failure.rule_id.as_str())
@@ -163,7 +163,7 @@ fn cli_matches_the_facade() {
             .map(|failure| failure.rule_id.as_str())
             .collect();
 
-        assert_eq!(cli.conformant, facade.conformant, "{}", case.file);
-        assert_eq!(cli_rules, facade_rules, "{}", case.file);
+        assert_eq!(cli.conformant, library.conformant, "{}", case.file);
+        assert_eq!(cli_rules, library_rules, "{}", case.file);
     }
 }

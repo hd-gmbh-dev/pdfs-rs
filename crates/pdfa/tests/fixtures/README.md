@@ -9,4 +9,4 @@
   which breaks ISO 19005-1 6.7.2 (the catalog must reference a metadata stream).
   Used as the negative control.
 
-SHAPTH customer or JIRA documents never go into this repository.
+Customer or ticket documents never go into this repository.

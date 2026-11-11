@@ -1,5 +1,5 @@
 //! Wire-level check: the service answers the vendored `pdfservice.Pdf/Validate`
-//! contract with the façade's verdict and rule ids.
+//! contract with the library's verdict and rule ids.
 
 use std::net::{Ipv4Addr, SocketAddr};
 use std::path::{Path, PathBuf};
@@ -70,7 +70,7 @@ async fn broken_fixtures_carry_iso_rule_ids() {
     }
 }
 
-/// SHAPTH2-1364 decision: an *empty* `/Filter` array is tolerated (veraPDF reading).
+/// An *empty* `/Filter` array is tolerated by default (veraPDF reading).
 #[tokio::test]
 async fn empty_filter_array_is_tolerated() {
     let addr = start().await;

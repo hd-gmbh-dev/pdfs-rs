@@ -6,7 +6,7 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "PDF/A conformance checking for SHAPTH — façade over the page_validation engine"
+description = "PDF/A conformance checking — thin wrapper over the page_validation engine"
 
 [dependencies]
 lopdf = "0.45"

@@ -1,8 +1,10 @@
-# image: harbor.akdb.de/shapth/service/pdfs-service (local builds: `pdfs-service:local`)
-ARG RUST_IMAGE=harbor.akdb.de/ozg/docker/rust-alpine:1.97.1
-ARG BASE_IMAGE=harbor.akdb.de/ozg/docker/alpine:3.24.0
+# image: pdfs-service
+ARG RUST_IMAGE=rust:1.89-alpine
+ARG BASE_IMAGE=alpine:3.24
 
 FROM ${RUST_IMAGE} AS build
+# the official rust:alpine image ships no C toolchain; no-op where it is present
+RUN apk add --no-cache musl-dev gcc
 WORKDIR /src
 COPY . .
 RUN cargo build --release --bin pdfs-service

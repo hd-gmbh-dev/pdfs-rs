@@ -1,8 +1,8 @@
-//! PDF/A conformance checking for SHAPTH.
+//! PDF/A conformance checking.
 //!
-//! A thin façade over the `page_validation` engine: it fixes the report shape we
-//! hand to `pdf-integrity` (ISO rule ids plus a readable message) and keeps the
-//! engine replaceable behind one function.
+//! A thin wrapper over the `page_validation` engine: it fixes the report shape
+//! (ISO rule ids plus a readable message), reports one finding per root cause and
+//! keeps the engine replaceable behind one function.
 
 use std::fmt;
 
@@ -23,7 +23,7 @@ const METADATA_DERIVED: [&str; 5] = [
     "ISO 19005-1:2005:6.2.3.3:",
 ];
 
-/// How the façade treats the empty-`/Filter`-array edge case (ISO 19005-1 6.7.2).
+/// How the wrapper treats the empty-`/Filter`-array edge case (ISO 19005-1 6.7.2).
 ///
 /// The clause forbids the `Filter` key in the catalog metadata stream dictionary,
 /// even an empty array; veraPDF normalises an empty array to "no filter" and passes

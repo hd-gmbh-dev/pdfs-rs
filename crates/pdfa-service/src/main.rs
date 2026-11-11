@@ -1,7 +1,6 @@
 //! `pdfs-service` — runs the PDF/A validator as a gRPC service.
 //!
-//! Listens on `PDFS_ADDR` (default `0.0.0.0:11242`, the port `file-integrity`
-//! expects from `pdf_integrity_url`).
+//! Listens on `PDFS_ADDR` (default `0.0.0.0:11242`).
 
 use std::net::SocketAddr;
 

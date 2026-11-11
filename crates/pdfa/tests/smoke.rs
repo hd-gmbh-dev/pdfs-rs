@@ -1,4 +1,4 @@
-//! Smoke tests for the façade: one conformant sample, one deliberately broken.
+//! Smoke tests for the wrapper: one conformant sample, one deliberately broken.
 
 use pdfa::{validate_bytes, Profile};
 
