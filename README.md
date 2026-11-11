@@ -48,7 +48,7 @@ if !report.conformant {
 cargo install --path crates/pdfa-cli      # installs `pdfs`
 pdfs check Pruefbericht.pdf               # exit 0 conformant, 1 non-conformant, 2 unreadable
 pdfs check Pruefbericht.pdf --format json  # machine readable report
-pdfs check Pruefbericht.pdf --policy tolerate-empty-filter   # veraPDF-compatible reading
+pdfs check Pruefbericht.pdf --policy strict                  # literal ISO 19005-1 reading
 ```
 
 ```
@@ -95,12 +95,13 @@ Java `pdf-integrity` (same contract, ClusterIP-only, gRPC probes).
 
 ISO 19005-1 6.7.2 forbids the `Filter` key in the catalog metadata stream dictionary
 — including an empty array. veraPDF normalises an empty array to "no filter" and
-passes such files. `Policy::Strict` (default) follows the clause,
+passes such files. `Policy::Strict` follows the clause,
 `Policy::TolerateEmptyFilterArray` follows veraPDF. A non-empty filter — the case
 that actually hides the XMP from simple tools — fails under both.
 
-Default is `Strict` until the SHAPTH2-1364 decision lands; flipping it is one line
-in `crates/pdfa/src/lib.rs` (`Policy::default`).
+Default is `TolerateEmptyFilterArray` (SHAPTH2-1364 decision, 2026-11-11): the
+SHAPTH gate accepts what veraPDF accepts. `--policy strict` / `Policy::Strict` is
+the literal-clause mode for audits.
 
 ## Corpus
 

@@ -28,7 +28,7 @@ enum Command {
         #[arg(long, value_enum, default_value_t = Format::Text)]
         format: Format,
         /// How to treat an empty /Filter array in the metadata stream dictionary
-        #[arg(long, value_enum, default_value_t = PolicyArg::Strict)]
+        #[arg(long, value_enum, default_value_t = PolicyArg::TolerateEmptyFilter)]
         policy: PolicyArg,
     },
 }

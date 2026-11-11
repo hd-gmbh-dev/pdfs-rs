@@ -21,14 +21,11 @@ fn rules(bytes: &[u8], policy: Policy) -> (bool, bool, Vec<String>) {
 }
 
 #[test]
-fn strict_is_the_default() {
+fn tolerating_an_empty_array_is_the_default() {
     let default = validate_bytes(EMPTY_FILTER, Profile::PdfA1b).expect("readable");
-    let strict =
-        validate_bytes_with(EMPTY_FILTER, Profile::PdfA1b, Policy::Strict).expect("readable");
 
-    assert_eq!(default.conformant, strict.conformant);
-    assert_eq!(default.failures.len(), strict.failures.len());
-    assert!(!default.tolerated);
+    assert!(default.conformant);
+    assert!(default.tolerated);
 }
 
 #[test]

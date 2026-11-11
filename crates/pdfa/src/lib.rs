@@ -31,8 +31,8 @@ const METADATA_DERIVED: [&str; 5] = [
 /// veraPDF. A *non-empty* filter is always reported — it really is a violation.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Policy {
-    #[default]
     Strict,
+    #[default]
     TolerateEmptyFilterArray,
 }
 

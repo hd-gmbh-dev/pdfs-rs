@@ -2,7 +2,7 @@
 //! and colour rules that fail because of it.
 
 use lopdf::{Document, Object, ObjectId};
-use pdfa::{validate_bytes, Profile};
+use pdfa::{validate_bytes_with, Policy, Profile};
 
 const CONFORMANT: &[u8] = include_bytes!("fixtures/canonical-pdfa-1b.pdf");
 
@@ -40,7 +40,12 @@ fn with_empty_metadata_filter() -> Vec<u8> {
 
 #[test]
 fn empty_filter_yields_exactly_one_failure() {
-    let report = validate_bytes(&with_empty_metadata_filter(), Profile::PdfA1b).expect("readable");
+    let report = validate_bytes_with(
+        &with_empty_metadata_filter(),
+        Profile::PdfA1b,
+        Policy::Strict,
+    )
+    .expect("readable");
 
     assert_eq!(
         report
@@ -55,8 +60,12 @@ fn empty_filter_yields_exactly_one_failure() {
 
 #[test]
 fn missing_metadata_collapses_to_its_root_cause() {
-    let report = validate_bytes(include_bytes!("fixtures/no-metadata.pdf"), Profile::PdfA1b)
-        .expect("readable");
+    let report = validate_bytes_with(
+        include_bytes!("fixtures/no-metadata.pdf"),
+        Profile::PdfA1b,
+        Policy::Strict,
+    )
+    .expect("readable");
 
     assert_eq!(
         report

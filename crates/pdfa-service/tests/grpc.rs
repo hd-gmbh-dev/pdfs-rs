@@ -59,7 +59,7 @@ async fn broken_fixtures_carry_iso_rule_ids() {
 
     for (name, rule_id) in [
         ("no-metadata.pdf", "ISO 19005-1:2005:6.7.2:1"),
-        ("empty-metadata-filter.pdf", "ISO 19005-1:2005:6.7.2:2"),
+        ("compressed-metadata-filter.pdf", "ISO 19005-1:2005:6.7.2:2"),
     ] {
         let reply = validate(addr, fixture(name)).await;
 
@@ -68,6 +68,16 @@ async fn broken_fixtures_carry_iso_rule_ids() {
         assert_eq!(codes, [rule_id], "{name}");
         assert!(!reply.error[0].details.is_empty(), "{name}");
     }
+}
+
+/// SHAPTH2-1364 decision: an *empty* `/Filter` array is tolerated (veraPDF reading).
+#[tokio::test]
+async fn empty_filter_array_is_tolerated() {
+    let addr = start().await;
+    let reply = validate(addr, fixture("empty-metadata-filter.pdf")).await;
+
+    assert!(reply.valid);
+    assert!(reply.error.is_empty(), "{:?}", reply.error);
 }
 
 #[tokio::test]
