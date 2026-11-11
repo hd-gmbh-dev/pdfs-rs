@@ -23,6 +23,19 @@ const METADATA_DERIVED: [&str; 5] = [
     "ISO 19005-1:2005:6.2.3.3:",
 ];
 
+/// How the façade treats the empty-`/Filter`-array edge case (ISO 19005-1 6.7.2).
+///
+/// The clause forbids the `Filter` key in the catalog metadata stream dictionary,
+/// even an empty array; veraPDF normalises an empty array to "no filter" and passes
+/// such files. `Strict` follows the clause, `TolerateEmptyFilterArray` follows
+/// veraPDF. A *non-empty* filter is always reported — it really is a violation.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Policy {
+    #[default]
+    Strict,
+    TolerateEmptyFilterArray,
+}
+
 /// Conformance profile to check against.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Profile {
@@ -60,9 +73,11 @@ pub struct Report {
     pub conformant: bool,
     pub profile: Profile,
     pub failures: Vec<Failure>,
+    /// Set when a failure was accepted because of [`Policy::TolerateEmptyFilterArray`].
+    pub tolerated: bool,
 }
 
-/// Validates PDF bytes against `profile`.
+/// Validates PDF bytes against `profile` using the default [`Policy`].
 ///
 /// # Errors
 ///
@@ -72,23 +87,81 @@ pub fn validate_bytes(
     bytes: &[u8],
     profile: Profile,
 ) -> Result<Report, page_validation::PageError> {
+    validate_bytes_with(bytes, profile, Policy::default())
+}
+
+/// Validates PDF bytes against `profile` and `policy`.
+///
+/// # Errors
+///
+/// Returns the engine error when the input is not a readable PDF or exceeds the
+/// engine's safety limits.
+pub fn validate_bytes_with(
+    bytes: &[u8],
+    profile: Profile,
+    policy: Policy,
+) -> Result<Report, page_validation::PageError> {
     let options = ValidationOptions::default().profile(profile.engine());
     let report = validate_pdf_bytes(bytes, &options)?;
 
+    let mut failures = collapse(
+        report
+            .failures
+            .into_iter()
+            .map(|failure| Failure {
+                rule_id: failure.rule_id,
+                message: failure.message,
+            })
+            .collect(),
+    );
+
+    let mut tolerated = false;
+    if policy == Policy::TolerateEmptyFilterArray
+        && failures.len() == 1
+        && failures[0].rule_id == EMPTY_FILTER_RULE
+        && metadata_filter_is_empty(bytes)
+    {
+        failures.clear();
+        tolerated = true;
+    }
+
     Ok(Report {
-        conformant: report.is_compliant,
+        conformant: failures.is_empty(),
         profile,
-        failures: collapse(
-            report
-                .failures
-                .into_iter()
-                .map(|failure| Failure {
-                    rule_id: failure.rule_id,
-                    message: failure.message,
-                })
-                .collect(),
-        ),
+        failures,
+        tolerated,
     })
+}
+
+/// The rule that fires for a `Filter` key in the catalog metadata stream.
+const EMPTY_FILTER_RULE: &str = "ISO 19005-1:2005:6.7.2:2";
+
+/// True when the catalog metadata stream dictionary carries a `Filter` entry that
+/// names no filter (an empty array), i.e. nothing is actually encoded.
+///
+/// Any parse problem answers `false`, so tolerance never widens silently.
+fn metadata_filter_is_empty(bytes: &[u8]) -> bool {
+    use lopdf::Object;
+
+    let Ok(document) = lopdf::Document::load_mem(bytes) else {
+        return false;
+    };
+
+    document
+        .objects
+        .values()
+        .filter_map(|object| {
+            object
+                .as_dict()
+                .ok()
+                .or_else(|| object.as_stream().map(|stream| &stream.dict).ok())
+        })
+        .filter(|dict| {
+            dict.get(b"Type")
+                .and_then(Object::as_name)
+                .is_ok_and(|name| name == b"Metadata")
+        })
+        .any(|dict| matches!(dict.get(b"Filter"), Ok(Object::Array(items)) if items.is_empty()))
 }
 
 /// Keeps one finding per root cause: when the metadata stream itself is broken,

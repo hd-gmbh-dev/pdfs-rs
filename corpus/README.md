@@ -8,12 +8,17 @@ ordered finding fails.
 | --- | --- | --- |
 | `canonical-pdfa-1b.pdf` | `page` test fixtures, MIT (Copyright (c) 2026 Joseph Barbier--Darnal) | conformant |
 | `no-metadata.pdf` | derived: catalog `/Metadata 49 0 R` overwritten with spaces (byte-neutral) | fails `ISO 19005-1:2005:6.7.2:1` |
-| `empty-metadata-filter.pdf` | derived: metadata stream dictionary gets an empty `/Filter` array (the SHAPTH2-1364 construct) | fails `ISO 19005-1:2005:6.7.2:2`, and only that one |
+| `empty-metadata-filter.pdf` | derived: metadata stream dictionary gets an empty `/Filter` array (the SHAPTH2-1364 construct) | strict: fails `ISO 19005-1:2005:6.7.2:2`; `--policy tolerate-empty-filter`: conformant |
+| `compressed-metadata-filter.pdf` | derived: metadata stream really is FlateDecode-compressed (`/Filter [/FlateDecode]`) | fails `ISO 19005-1:2005:6.7.2:2` under **every** policy |
+
+The last two pin the SHAPTH2-1364 policy: an empty array may be tolerated (that is
+what veraPDF does), a non-empty filter never is.
 
 Regenerate the derived fixtures from the canonical sample:
 
 ```bash
 # empty /Filter array in the metadata stream dictionary
+# (compressed variant: cargo run -q -p pdfa --example gen_compressed_filter -- …)
 cargo run -q -p pdfa --example gen_empty_filter -- \
   crates/pdfa/tests/fixtures/canonical-pdfa-1b.pdf corpus/empty-metadata-filter.pdf
 

@@ -48,6 +48,7 @@ if !report.conformant {
 cargo install --path crates/pdfa-cli      # installs `pdfs`
 pdfs check Pruefbericht.pdf               # exit 0 conformant, 1 non-conformant, 2 unreadable
 pdfs check Pruefbericht.pdf --format json  # machine readable report
+pdfs check Pruefbericht.pdf --policy tolerate-empty-filter   # veraPDF-compatible reading
 ```
 
 ```
@@ -89,6 +90,17 @@ The image serves gRPC on 11242 and exposes the standard gRPC health service
 (`tonic-health`), so Kubernetes `grpc` probes work without an HTTP side-channel.
 `helm-charts/skaffold/configs/pdfs/` in the SHAPTH repo runs it in place of the
 Java `pdf-integrity` (same contract, ClusterIP-only, gRPC probes).
+
+### Policy
+
+ISO 19005-1 6.7.2 forbids the `Filter` key in the catalog metadata stream dictionary
+— including an empty array. veraPDF normalises an empty array to "no filter" and
+passes such files. `Policy::Strict` (default) follows the clause,
+`Policy::TolerateEmptyFilterArray` follows veraPDF. A non-empty filter — the case
+that actually hides the XMP from simple tools — fails under both.
+
+Default is `Strict` until the SHAPTH2-1364 decision lands; flipping it is one line
+in `crates/pdfa/src/lib.rs` (`Policy::default`).
 
 ## Corpus
 

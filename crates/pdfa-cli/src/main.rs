@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use pdfa::{validate_bytes, Failure, Profile, Report};
+use pdfa::{validate_bytes_with, Failure, Policy, Profile, Report};
 
 #[derive(Parser)]
 #[command(name = "pdfs", version, about = "PDF/A conformance checking")]
@@ -27,6 +27,9 @@ enum Command {
         /// Output format
         #[arg(long, value_enum, default_value_t = Format::Text)]
         format: Format,
+        /// How to treat an empty /Filter array in the metadata stream dictionary
+        #[arg(long, value_enum, default_value_t = PolicyArg::Strict)]
+        policy: PolicyArg,
     },
 }
 
@@ -45,6 +48,23 @@ impl From<ProfileArg> for Profile {
 }
 
 #[derive(Clone, Copy, ValueEnum)]
+enum PolicyArg {
+    /// Report the empty array (ISO 19005-1 6.7.2 wording)
+    Strict,
+    /// Accept it like veraPDF does; a non-empty filter still fails
+    TolerateEmptyFilter,
+}
+
+impl From<PolicyArg> for Policy {
+    fn from(value: PolicyArg) -> Self {
+        match value {
+            PolicyArg::Strict => Policy::Strict,
+            PolicyArg::TolerateEmptyFilter => Policy::TolerateEmptyFilterArray,
+        }
+    }
+}
+
+#[derive(Clone, Copy, ValueEnum)]
 enum Format {
     Text,
     Json,
@@ -58,11 +78,12 @@ fn main() -> ExitCode {
             file,
             profile,
             format,
-        } => check(&file, profile.into(), format),
+            policy,
+        } => check(&file, profile.into(), format, policy.into()),
     }
 }
 
-fn check(file: &Path, profile: Profile, format: Format) -> ExitCode {
+fn check(file: &Path, profile: Profile, format: Format, policy: Policy) -> ExitCode {
     let bytes = match std::fs::read(file) {
         Ok(bytes) => bytes,
         Err(err) => {
@@ -71,7 +92,7 @@ fn check(file: &Path, profile: Profile, format: Format) -> ExitCode {
         }
     };
 
-    let report = match validate_bytes(&bytes, profile) {
+    let report = match validate_bytes_with(&bytes, profile, policy) {
         Ok(report) => report,
         Err(err) => {
             eprintln!("pdfs: {}: {err}", file.display());
@@ -113,6 +134,7 @@ struct JsonReport<'a> {
     file: String,
     profile: &'a str,
     conformant: bool,
+    tolerated: bool,
     failures: Vec<JsonFailure<'a>>,
 }
 
@@ -127,6 +149,7 @@ fn print_json(file: &Path, report: &Report) {
         file: file.display().to_string(),
         profile: &report.profile.to_string(),
         conformant: report.conformant,
+        tolerated: report.tolerated,
         failures: report
             .failures
             .iter()

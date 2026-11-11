@@ -9,12 +9,29 @@
     {
       "file": "no-metadata.pdf",
       "conformant": false,
-      "failures": ["ISO 19005-1:2005:6.7.2:1"]
+      "failures": [
+        "ISO 19005-1:2005:6.7.2:1"
+      ]
     },
     {
       "file": "empty-metadata-filter.pdf",
       "conformant": false,
-      "failures": ["ISO 19005-1:2005:6.7.2:2"]
+      "failures": [
+        "ISO 19005-1:2005:6.7.2:2"
+      ]
+    },
+    {
+      "file": "compressed-metadata-filter.pdf",
+      "conformant": false,
+      "failures": [
+        "ISO 19005-1:2005:6.7.2:2"
+      ]
+    },
+    {
+      "file": "empty-metadata-filter.pdf",
+      "policy": "tolerate-empty-filter",
+      "conformant": true,
+      "failures": []
     }
   ]
 }

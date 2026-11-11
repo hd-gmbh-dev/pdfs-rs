@@ -17,6 +17,8 @@ struct Manifest {
 #[derive(Deserialize)]
 struct Case {
     file: String,
+    #[serde(default)]
+    policy: Option<String>,
     conformant: bool,
     failures: Vec<String>,
 }
@@ -40,17 +42,19 @@ fn manifest() -> Manifest {
 
 fn run(case: &Case, profile: &str) -> Result<(), String> {
     let path: PathBuf = Path::new(CORPUS).join(&case.file);
-    let output = Command::new(env!("CARGO_BIN_EXE_pdfs"))
-        .args([
-            "check",
-            path.to_str().expect("utf-8 path"),
-            "--profile",
-            profile,
-            "--format",
-            "json",
-        ])
-        .output()
-        .expect("run pdfs");
+    let mut command = Command::new(env!("CARGO_BIN_EXE_pdfs"));
+    command.args([
+        "check",
+        path.to_str().expect("utf-8 path"),
+        "--profile",
+        profile,
+        "--format",
+        "json",
+    ]);
+    if let Some(policy) = &case.policy {
+        command.args(["--policy", policy]);
+    }
+    let output = command.output().expect("run pdfs");
 
     let expected_code = i32::from(!case.conformant);
     if output.status.code() != Some(expected_code) {
@@ -128,6 +132,9 @@ fn cli_matches_the_facade() {
     let facade_profile = pdfa::Profile::PdfA1b;
 
     for case in manifest().cases {
+        if case.policy.is_some() {
+            continue; // non-default policy, covered by the corpus run
+        }
         let path: PathBuf = Path::new(CORPUS).join(&case.file);
         let bytes = std::fs::read(&path).expect("fixture");
         let facade = pdfa::validate_bytes(&bytes, facade_profile).expect("validate");
