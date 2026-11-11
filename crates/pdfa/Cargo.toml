@@ -10,3 +10,6 @@ description = "PDF/A conformance checking for SHAPTH — façade over the page_v
 
 [dependencies]
 page_validation = "=0.13.0"
+
+[dev-dependencies]
+lopdf = "0.45"
