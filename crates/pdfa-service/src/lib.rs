@@ -54,7 +54,13 @@ pub async fn serve<F>(
 where
     F: std::future::Future<Output = ()> + Send + 'static,
 {
+    let (health_reporter, health_service) = tonic_health::server::health_reporter();
+    health_reporter
+        .set_serving::<pdf::pdf_server::PdfServer<PdfService>>()
+        .await;
+
     tonic::transport::Server::builder()
+        .add_service(health_service)
         .add_service(pdf::pdf_server::PdfServer::new(PdfService))
         .serve_with_shutdown(addr, shutdown)
         .await

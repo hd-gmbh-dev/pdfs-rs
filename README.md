@@ -79,6 +79,17 @@ grpcurl -plaintext \
 #                "details": "the catalog metadata stream dictionary contains a Filter key" } ] }
 ```
 
+## Container
+
+```bash
+docker build -t pdfs-service:local .
+```
+
+The image serves gRPC on 11242 and exposes the standard gRPC health service
+(`tonic-health`), so Kubernetes `grpc` probes work without an HTTP side-channel.
+`helm-charts/skaffold/configs/pdfs/` in the SHAPTH repo runs it in place of the
+Java `pdf-integrity` (same contract, ClusterIP-only, gRPC probes).
+
 ## Corpus
 
 `corpus/` holds public regression fixtures plus `manifest.json` with the expected
