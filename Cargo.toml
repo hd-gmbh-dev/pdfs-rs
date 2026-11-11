@@ -7,7 +7,7 @@ members = [
 [workspace.package]
 edition = "2021"
 version = "0.1.0"
-rust-version = "1.88.0"
+rust-version = "1.89.0"
 authors = ["H & D GmbH Open Source <contact-oss@h-d-gmbh.de>"]
 license = "MIT"
 repository = "https://github.com/hd-gmbh-dev/pdfs-rs"
