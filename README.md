@@ -42,6 +42,27 @@ if !report.conformant {
 }
 ```
 
+## CLI
+
+```bash
+cargo install --path crates/pdfa-cli      # installs `pdfs`
+pdfs check Pruefbericht.pdf               # exit 0 conformant, 1 non-conformant, 2 unreadable
+pdfs check Pruefbericht.pdf --format json  # machine readable report
+```
+
+```
+Pruefbericht.pdf — PDF/A-1b: non-conformant (1 failed rule)
+  ISO 19005-1:2005:6.7.2:2  the catalog metadata stream dictionary contains a Filter key
+```
+
+## Corpus
+
+`corpus/` holds public regression fixtures plus `manifest.json` with the expected
+verdict and rule ids per file — see [corpus/README.md](corpus/README.md). The
+harness (`crates/pdfa-cli/tests/corpus.rs`) runs the CLI over every case, checks
+exit code, verdict and the exact rule list, and fails if a broken fixture stops
+being detected. It also asserts the CLI agrees with the library for each fixture.
+
 ## Tests
 
 ```bash

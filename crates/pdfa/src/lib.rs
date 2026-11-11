@@ -4,6 +4,8 @@
 //! hand to `pdf-integrity` (ISO rule ids plus a readable message) and keeps the
 //! engine replaceable behind one function.
 
+use std::fmt;
+
 use page_validation::{validate_pdf_bytes, ValidationOptions, ValidationProfile};
 
 /// Rule whose failure means the catalog metadata stream is unusable (missing or
@@ -31,6 +33,14 @@ impl Profile {
     fn engine(self) -> ValidationProfile {
         match self {
             Profile::PdfA1b => ValidationProfile::PdfA1b,
+        }
+    }
+}
+
+impl fmt::Display for Profile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Profile::PdfA1b => f.write_str("PDF/A-1b"),
         }
     }
 }
