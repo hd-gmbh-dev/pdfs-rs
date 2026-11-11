@@ -55,6 +55,30 @@ Pruefbericht.pdf — PDF/A-1b: non-conformant (1 failed rule)
   ISO 19005-1:2005:6.7.2:2  the catalog metadata stream dictionary contains a Filter key
 ```
 
+## Service
+
+`crates/pdfa-service` implements `pdfservice.Pdf/Validate` — the contract
+`file-integrity` calls today (`shapth-file-integrity` → `pdf_integrity_url`). The
+reply carries the validator's findings: `ValidateError.code` is the ISO rule id,
+`ValidateError.details` the readable message. Unreadable input answers with
+`INVALID_ARGUMENT` instead of a verdict.
+
+```bash
+cargo run -p pdfa-service            # listens on $PDFS_ADDR, default 0.0.0.0:11242
+```
+
+Smoke test with the *consumer's* proto, i.e. exactly what `file-integrity` speaks:
+
+```bash
+python3 -c "import base64,json;open('/tmp/req.json','w').write(json.dumps({'file':base64.b64encode(open('corpus/empty-metadata-filter.pdf','rb').read()).decode()}))"
+
+grpcurl -plaintext \
+  -import-path ../shapth/file-integrity/crates/ctx/proto -proto pdf.proto \
+  -d @ localhost:11242 pdfservice.Pdf/Validate < /tmp/req.json
+# { "error": [ { "code": "ISO 19005-1:2005:6.7.2:2",
+#                "details": "the catalog metadata stream dictionary contains a Filter key" } ] }
+```
+
 ## Corpus
 
 `corpus/` holds public regression fixtures plus `manifest.json` with the expected

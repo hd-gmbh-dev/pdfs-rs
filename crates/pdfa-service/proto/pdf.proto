@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "de.hd.proto";
+option java_outer_classname = "PdfServiceProto";
+
+package pdfservice;
+
+// The greeting service definition.
+service Pdf {
+  // Sends a greeting
+  rpc Validate (ValidateRequest) returns (ValidateReply) {}
+}
+
+// The request message containing the user's name.
+message ValidateRequest {
+  bytes file = 1;
+}
+
+message ValidateError {
+  string code = 1;
+  string details = 2;
+}
+
+// The response message containing the greetings
+message ValidateReply {
+  bool valid = 1;
+  repeated ValidateError error = 2;
+}

@@ -1,0 +1,24 @@
+[package]
+name = "pdfa-service"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "gRPC service exposing PDF/A conformance checking (pdfservice.Pdf/Validate)"
+
+[[bin]]
+name = "pdfs-service"
+path = "src/main.rs"
+
+[dependencies]
+pdfa = { path = "../pdfa", version = "0.1.0" }
+prost = "0.14.4"
+tonic = "0.14.6"
+tonic-prost = "0.14.6"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "net", "signal"] }
+tokio-stream = { version = "0.1.19", features = ["net"] }
+
+[build-dependencies]
+tonic-prost-build = "0.14.6"
